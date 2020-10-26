@@ -1,0 +1,42 @@
+---
+- hosts: jenkins
+  become: true
+  vars: 
+    jenkins_server_name: jenkins.xyz.com 
+
+  tasks:
+    - name: Create directory if they don't exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: 0775
+      loop:
+        - /home/ubuntu/jenkins
+        - /home/ubuntu/nginx/conf.d
+        - /home/ubuntu/certs
+
+    - name: Copy Server Certs
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: 'certs/{{ jenkins_server_name }}.key', dest: '/home/ubuntu/certs/{{ jenkins_server_name }}.key' }
+        - { src: 'certs/{{ jenkins_server_name }}.crt', dest: '/home/ubuntu/certs/{{ jenkins_server_name }}.crt' }
+
+    - name: Copy Server Certs
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: 'templates/jenkins.conf.j2', dest: '/home/ubuntu/nginx/conf.d/jenkins.conf' }
+        - { src: 'templates/docker-compose.yml.j2', dest: '/home/ubuntu/docker-compose.yml' }
+
+    - name: Install docker-compose
+      apt: 
+        update_cache: yes 
+        name: docker-compose 
+        state: present
+
+
