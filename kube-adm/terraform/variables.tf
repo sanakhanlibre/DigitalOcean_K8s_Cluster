@@ -18,6 +18,10 @@ variable "droplet_image" {
   default = ""
 }
 
-variable "master_nodes_name" {
+variable "k8s_master_nodes_name" {
+  type = list
+}
+
+variable "k8s_worker_nodes_name" {
   type = list
 }

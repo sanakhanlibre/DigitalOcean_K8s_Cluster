@@ -1,0 +1,73 @@
+---
+- hosts: all 
+  become: yes
+
+  tasks:
+  - name: Update Repository
+    apt: 
+      update_cache: yes 
+      force_apt_get: yes 
+      cache_valid_time: 3600
+
+  - name: Ensure sudo group exists
+    group: 
+      name: sudo 
+      state: present
+
+  - name: Add ubuntu user and add it to sudo group
+    user: 
+      name: ubuntu
+      state: present
+      createhome: yes
+    become: yes
+    become_method: "sudo"
+
+  - name: Set up authorized keys for the ubuntu user
+    authorized_key: 
+      user: ubuntu 
+      key: "{{item}}"
+    with_file:
+      - ~/id_rsa.pub
+
+  - name: Add ubuntu users to sudoers
+    template:
+      src: templates/sudoers.j2
+      dest: /etc/sudoers.d/ubuntu
+      validate: 'visudo -cf %s'
+      mode: 0440
+    
+  - name: Install Prerequisites 
+    apt:
+      name:
+        - python3-pip 
+        - apt-transport-https 
+        - ca-certificates
+        - curl
+        - gnupg-agent
+        - software-properties-common
+      state: latest
+      update_cache: yes
+
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu bionic stable
+      state: present
+
+  - name: Install Docker Engine
+    apt:
+      name: 
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io 
+      state: latest  
+      update_cache: yes 
+
+  - name: Enable docker service
+    service: 
+      name: docker
+      enabled: yes
