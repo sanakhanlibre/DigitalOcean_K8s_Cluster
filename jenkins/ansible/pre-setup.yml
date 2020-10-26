@@ -3,7 +3,7 @@
   become: yes
 
   tasks:
-  - name: Update apt-get repo and cache
+  - name: Update Repository
     apt: 
       update_cache: yes 
       force_apt_get: yes 
@@ -14,7 +14,7 @@
       name: sudo 
       state: present
 
-  - name: Add ubuntu user and add it to sudo
+  - name: Add ubuntu user and add it to sudo group
     user: 
       name: ubuntu
       state: present
@@ -36,7 +36,7 @@
       validate: 'visudo -cf %s'
       mode: 0440
     
-  - name: Install packages
+  - name: Install Prerequisites 
     apt:
       name:
         - python3-pip 
@@ -45,7 +45,8 @@
         - curl
         - gnupg-agent
         - software-properties-common
-      state: present
+      state: latest
+      update_cache: yes
 
   - name: Add Docker GPG apt Key
     apt_key:
@@ -57,12 +58,16 @@
       repo: deb https://download.docker.com/linux/ubuntu bionic stable
       state: present
 
-  - name: Update apt and install docker-ce
-    apt: 
+  - name: Install Docker Engine
+    apt:
+      name: 
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io 
+      state: latest  
       update_cache: yes 
-      name: docker-ce
-      state: latest
 
-  - name: Install Docker Module for Python
-    pip:
-      name: docker-py
+  - name: Enable docker service
+    service: 
+      name: docker
+      enabled: yes
