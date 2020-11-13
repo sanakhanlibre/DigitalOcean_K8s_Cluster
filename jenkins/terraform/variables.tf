@@ -18,6 +18,10 @@ variable "droplet_image" {
   default = ""
 }
 
-variable "jenkins_node_name" {
+variable "jenkins_master_name" {
+  default = ""
+}
+
+variable "jenkins_slave_name" {
   default = ""
 }
