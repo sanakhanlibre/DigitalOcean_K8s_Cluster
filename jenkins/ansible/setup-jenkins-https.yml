@@ -1,5 +1,5 @@
 ---
-- hosts: jenkins-master
+- hosts: jenkins
   become: true
   vars: 
     jenkins_server_name: jenkins.bubblesville.com 
@@ -17,7 +17,15 @@
         - /opt/nginx/conf.d
         - /opt/certs
 
-    - name: Copy Nginx conf and docker-compose
+    - name: Copy Server Certs
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: 'certs/{{ jenkins_server_name }}.key', dest: '/opt/certs/{{ jenkins_server_name }}.key' }
+        - { src: 'certs/{{ jenkins_server_name }}.crt', dest: '/opt/certs/{{ jenkins_server_name }}.crt' }
+
+    - name: Copy Server Certs
       template:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
